@@ -63,7 +63,12 @@ server_name  *.itcast.cn	www.itheima.*;     通配符匹配
 server_name ~^www\.(\w+)\.com$;              正则表达式
 ```
 
-精确匹配>通配符匹配>正则表达式
+精确匹配>正则表达式>模糊匹配
+
+同一级中匹配度高的优先
+
+同一级中同时匹配到两个则按顺序在前面的优先
+配置实例：proxy2.conf
 
 ```
 location /abc{
@@ -292,7 +297,7 @@ curl -e "http://www.baidu.com/hello" www.mysvr.com:8088/hello
 
 ​	   5.在宿主机新建keepalived,nginx配置文件，根据刚才提交的镜像创建容器（keep-master），并将宿主机的					keepalived,nginx配置文件映射到容器的/etc/keepalived,/etc/nginx目录
 
-​			docker run -itd --privileged --name keep-master -v /Users/yu.zhang4/tmp/keepalived.conf:/etc/keepalived/keepalived.conf -v /Users/yu.zhang4/tmp/nginx_check.sh:/etc/keepalived/nginx_check.sh -v /lib/modules:/lib/modules nginx-keep /usr/sbin/init
+​			docker run -itd --privileged --name keep-master -v ~simpleServer/keepalived.conf:/etc/keepalived/keepalived.conf -v ~simpleServer/nginx_check.sh:/etc/keepalived/nginx_check.sh -v /lib/modules:/lib/modules nginx-keep /usr/sbin/init
 ​	   6.进入容器，启动keepalived和nginx
 
 ​		   docker exec -it keep-master /bin/bash
@@ -304,7 +309,10 @@ curl -e "http://www.baidu.com/hello" www.mysvr.com:8088/hello
 ​           nginx
 
 ​	   7.再新建一个容器(keep-slave),按照5，6，7，8步骤操作，注意配置文件略有不同
-​	   10.在keep-master容器执行ip a可以看到，已绑定虚拟ip，此时在keep-slave中是没有绑定虚拟ip的
+
+​			keepalived.conf文件中priority配置备机应小于主机
+
+​	   8.在keep-master容器执行ip a可以看到，已绑定虚拟ip(172.17.0.100)，此时在keep-slave中是没有绑定虚拟ip的
 
 ​
 
@@ -331,15 +339,13 @@ curl -e "http://www.baidu.com/hello" www.mysvr.com:8088/hello
 
 ​				nginx进程模型：
 
-​							![image-20220320155917109](/Users/yu.zhang4/Library/Application Support/typora-user-images/image-20220320155917109.png)
-
 ​	相关参数：
 
 ​		worker_processes   一般与cpu逻辑核数一致
 
 ​		worker_cpu_affinity 进程绑定
 
-​		accept_mutex    使用锁技术让worker进程串行之行，避免惊群现象
+​		accept_mutex    使用锁技术让worker进程串行执行，避免惊群现象
 
 连接数配置
 
