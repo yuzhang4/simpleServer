@@ -25,6 +25,7 @@ public class App {
                     stringBuffer.append(line);
                 }
                 System.out.printf("i get %s%n", stringBuffer);
+//                Thread.sleep(1000);
                 outToClient.writeBytes("HTTP/1.0 200 OK\r\n");
                 outToClient.writeBytes("Content-Type:application/json\r\n");
 //                outToClient.writeBytes("Location:http://localhost:8089/jack\r\n");
